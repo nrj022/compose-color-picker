@@ -4,8 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -145,11 +147,10 @@ fun ColorPickerDialog(
             onDismissRequest()
             showDialog = false
         }, properties = properties) {
-            Box(
-                modifier = Modifier
-                    .width(IntrinsicSize.Max)
-                    .clip(RoundedCornerShape(32.dp))
-                    .background(Color.White)
+            Surface(
+                modifier = Modifier.width(IntrinsicSize.Max),
+                shape = RoundedCornerShape(32.dp),
+                color = MaterialTheme.colorScheme.surface
             ) {
                 Box(modifier = Modifier.padding(32.dp)) {
                     Column {
@@ -171,7 +172,7 @@ fun ColorPickerDialog(
                             )
                             Text(
                                 text = buildAnnotatedString {
-                                    withStyle(SpanStyle(color = Color.Gray)) {
+                                    withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurfaceVariant)) {
                                         append("#")
                                     }
                                     withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {

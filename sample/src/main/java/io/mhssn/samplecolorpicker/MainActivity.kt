@@ -9,10 +9,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
             ColorPickerTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
+                    color = MaterialTheme.colorScheme.background
                 ) {
                     App()
                 }
@@ -112,7 +112,7 @@ fun App() {
                 .background(color)
         )
         Spacer(modifier = Modifier.height(24.dp))
-        Text(text = "Color Picker Type", color = Color.Black, fontWeight = FontWeight.Medium)
+        Text(text = "Color Picker Type", fontWeight = FontWeight.Medium)
         Spacer(modifier = Modifier.height(20.dp))
         LazyVerticalGrid(
             modifier = Modifier.fillMaxWidth(),
