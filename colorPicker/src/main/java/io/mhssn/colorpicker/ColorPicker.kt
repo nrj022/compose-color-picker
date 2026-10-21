@@ -36,7 +36,10 @@ sealed class ColorPickerType {
     /**
      * @param showAlphaBar Sets the visibility of the alpha bar.
      */
-    class Classic(val showAlphaBar: Boolean = true) : ColorPickerType()
+    class Classic(
+        val showAlphaBar: Boolean = true,
+        val initialColor: Color = Color.White
+    ) : ColorPickerType()
 
     /**
      * @param showBrightnessBar Sets the visibility of the brightness bar.
@@ -94,6 +97,7 @@ fun ColorPicker(
     Box(modifier = modifier) {
         when (type) {
             is ColorPickerType.Classic -> ClassicColorPicker(
+                initialColor = type.initialColor,
                 showAlphaBar = type.showAlphaBar,
                 onPickedColor = onPickedColor,
             )
