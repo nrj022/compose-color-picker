@@ -36,6 +36,7 @@ internal fun SimpleRingColorPicker(
     colorWidth: Dp,
     tracksCount: Int,
     sectorsCount: Int,
+    initialColor: Color = Color.Red,
     onPickedColor: (Color) -> Unit
 ) {
     val density = LocalDensity.current
@@ -46,10 +47,10 @@ internal fun SimpleRingColorPicker(
         with(density) { colorWidthPx + 5.dp.toPx() }
     }
     var pickerLocation by remember {
-        mutableStateOf(IntOffset(0, 0))
+        mutableStateOf(findClosestCell(initialColor, sectorsCount, tracksCount))
     }
     var radius by remember {
-        mutableStateOf(0f)
+        mutableFloatStateOf(0f)
     }
     LaunchedEffect(pickerLocation) {
         onPickedColor(
@@ -138,6 +139,29 @@ internal fun SimpleRingColorPicker(
     }
 }
 
+// The ring only has sectorsCount x tracksCount fixed colors, so pick the closest one
+private fun findClosestCell(color: Color, sectorsCount: Int, tracksCount: Int): IntOffset {
+    var closest = IntOffset(0, 0)
+    var minDistance = Float.MAX_VALUE
+    for (sector in 0 until sectorsCount) {
+        for (track in 0 until tracksCount) {
+            val cellColor = getColorAt(
+                sector / sectorsCount.toFloat(),
+                (track / tracksCount.toFloat()).coerceIn(0f, 1f)
+            )
+            val red = cellColor.red - color.red
+            val green = cellColor.green - color.green
+            val blue = cellColor.blue - color.blue
+            val distance = red * red + green * green + blue * blue
+            if (distance < minDistance) {
+                minDistance = distance
+                closest = IntOffset(sector, track)
+            }
+        }
+    }
+    return closest
+}
+
 private fun getColorAt(progress: Float, deepProgress: Float): Color {
     val (rangeProgress, range) = ColorPickerHelper.calculateRangeProgress(progress.toDouble())
     val red: Int
@@ -201,6 +225,7 @@ private fun getColorAt(progress: Float, deepProgress: Float): Color {
 private fun SimpleRingColorPickerPreview() {
     SimpleRingColorPicker(
         modifier = Modifier,
+        initialColor = Color(0xFF6FA8DC),
         colorWidth = 10.dp,
         tracksCount = 5,
         sectorsCount = 24,

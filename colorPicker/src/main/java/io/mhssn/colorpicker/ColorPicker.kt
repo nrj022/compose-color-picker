@@ -80,6 +80,7 @@ sealed class ColorPickerType {
         val colorWidth: Dp = 20.dp,
         val tracksCount: Int = 5,
         val sectorsCount: Int = 24,
+        val initialColor: Color = Color.Red,
     ) : ColorPickerType()
 }
 
@@ -119,6 +120,7 @@ fun ColorPicker(
                 onPickedColor = onPickedColor
             )
             is ColorPickerType.SimpleRing -> SimpleRingColorPicker(
+                initialColor = type.initialColor,
                 colorWidth = type.colorWidth,
                 tracksCount = type.tracksCount,
                 sectorsCount = type.sectorsCount,
