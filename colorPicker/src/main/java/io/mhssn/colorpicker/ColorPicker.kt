@@ -46,7 +46,8 @@ sealed class ColorPickerType {
     class Circle(
         val showBrightnessBar: Boolean = true,
         val showAlphaBar: Boolean = true,
-        val lightCenter: Boolean = true
+        val lightCenter: Boolean = true,
+        val initialColor: Color = if (lightCenter) Color.White else Color.Black
     ) : ColorPickerType()
 
     /**
@@ -97,6 +98,7 @@ fun ColorPicker(
                 onPickedColor = onPickedColor,
             )
             is ColorPickerType.Circle -> CircleColorPicker(
+                initialColor = type.initialColor,
                 showAlphaBar = type.showAlphaBar,
                 showBrightnessBar = type.showBrightnessBar,
                 lightCenter = type.lightCenter,
