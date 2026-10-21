@@ -35,6 +35,8 @@ import io.mhssn.colorpicker.pickers.SimpleRingColorPicker
 sealed class ColorPickerType {
     /**
      * @param showAlphaBar Sets the visibility of the alpha bar.
+     * @param initialColor The color selected when the picker is first shown.
+     * Only applied once; later changes are ignored.
      */
     class Classic(
         val showAlphaBar: Boolean = true,
@@ -45,6 +47,8 @@ sealed class ColorPickerType {
      * @param showBrightnessBar Sets the visibility of the brightness bar.
      * @param showAlphaBar Sets the visibility of the alpha bar.
      * @param lightCenter Changes the center of the circle to black or white.
+     * @param initialColor The color selected when the picker is first shown, defaults to the center color.
+     * Only applied once; later changes are ignored.
      */
     class Circle(
         val showBrightnessBar: Boolean = true,
@@ -60,6 +64,8 @@ sealed class ColorPickerType {
      * @param showDarknessBar Sets the visibility of the darkness bar.
      * @param showAlphaBar Sets the visibility of the alpha bar.
      * @param showColorPreview Sets the visibility of the center color preview circle.
+     * @param initialColor The color selected when the picker is first shown.
+     * Only applied once; later changes are ignored.
      */
     class Ring(
         val ringWidth: Dp = 10.dp,
@@ -75,6 +81,9 @@ sealed class ColorPickerType {
      * @param colorWidth Arc width of all colors.
      * @param tracksCount Amount of the tracks.
      * @param sectorsCount Amount of the sectors for each track.
+     * @param initialColor The color selected when the picker is first shown.
+     * The ring only has fixed colors, so the closest one is selected.
+     * Only applied once; later changes are ignored.
      */
     class SimpleRing(
         val colorWidth: Dp = 20.dp,
