@@ -51,10 +51,10 @@ fun App() {
         verticalArrangement = Arrangement.Center
     ) {
         var color by remember {
-            mutableStateOf(Color.Red)
+            mutableStateOf(Color.Blue)
         }
         var colorPickerType by remember {
-            mutableStateOf<ColorPickerType>(ColorPickerType.Classic())
+            mutableStateOf<ColorPickerType>(ColorPickerType.Classic(initialColor = color))
         }
         var showDialog by remember {
             mutableStateOf(false)
@@ -121,28 +121,28 @@ fun App() {
             content = {
                 item {
                     OutlinedButton(onClick = {
-                        colorPickerType = ColorPickerType.Classic()
+                        colorPickerType = ColorPickerType.Classic(initialColor = color)
                     }, shape = RoundedCornerShape(50)) {
                         Text(text = "Classic")
                     }
                 }
                 item {
                     OutlinedButton(onClick = {
-                        colorPickerType = ColorPickerType.Circle()
+                        colorPickerType = ColorPickerType.Circle(initialColor = color, lightCenter = false)
                     }, shape = RoundedCornerShape(50)) {
                         Text(text = "Circle")
                     }
                 }
                 item {
                     OutlinedButton(onClick = {
-                        colorPickerType = ColorPickerType.Ring()
+                        colorPickerType = ColorPickerType.Ring(initialColor = color)
                     }, shape = RoundedCornerShape(50)) {
                         Text(text = "Ring")
                     }
                 }
                 item {
                     OutlinedButton(onClick = {
-                        colorPickerType = ColorPickerType.SimpleRing()
+                        colorPickerType = ColorPickerType.SimpleRing(initialColor = color)
                     }, shape = RoundedCornerShape(50)) {
                         Text(text = "Simple Ring")
                     }
