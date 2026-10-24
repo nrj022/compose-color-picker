@@ -6,13 +6,14 @@ plugins {
 }
 
 ext {
-    GROUP_ID = 'io.mhssn'
+    GROUP_ID = 'io.github.nrj022'
     ARTIFACT_ID = 'colorpicker'
     VERSION = '2.0.0'
 }
 
 android {
-    namespace = "$GROUP_ID.$ARTIFACT_ID"
+    // Matches the Kotlin package (kept from the original library), independent of the publishing group
+    namespace = "io.mhssn.colorpicker"
     compileSdk = 36
 
     defaultConfig {
@@ -52,28 +53,41 @@ mavenPublishing {
         signAllPublications()
     }
 
-    coordinates(GROUP_ID, ARTIFACT_ID, VERSION)
+    // JitPack sets JITPACK, GROUP (com.github.<user>) and VERSION (the git tag) when building
+    def onJitPack = System.getenv("JITPACK") == "true"
+    coordinates(
+        onJitPack ? System.getenv("GROUP") : GROUP_ID,
+        ARTIFACT_ID,
+        onJitPack ? System.getenv("VERSION") : VERSION
+    )
 
     pom {
         name = ARTIFACT_ID
         description = "A color picker for Jetpack compose"
-        url = "https://github.com/mhssn95/compose-color-picker"
+        url = "https://github.com/nrj022/compose-color-picker"
         licenses {
             license {
-                name = 'ColorPicker License'
-                url = "https://github.com/mhssn95/compose-color-picker/blob/main/LICENSE"
+                name = "The Apache License, Version 2.0"
+                url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
             }
         }
         developers {
             developer {
+                id = "nrj022"
+                name = "nrj022"
+                url = "https://github.com/nrj022"
+            }
+            // Original author (forked from mhssn95/compose-color-picker)
+            developer {
                 id = "mhssn"
                 name = "Mhssn Alrobily"
+                url = "https://github.com/mhssn95"
             }
         }
         scm {
-            connection = "scm:git:github.com/mhssn95/compose-color-picker.git"
-            developerConnection = "scm:git:ssh://github.com/mhssn95/compose-color-picker.git"
-            url = "https://github.com/mhssn95/compose-color-picker/tree/main"
+            connection = "scm:git:git://github.com/nrj022/compose-color-picker.git"
+            developerConnection = "scm:git:ssh://git@github.com/nrj022/compose-color-picker.git"
+            url = "https://github.com/nrj022/compose-color-picker"
         }
     }
 }
