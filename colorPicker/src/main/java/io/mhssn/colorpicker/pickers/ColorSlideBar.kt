@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -31,9 +32,13 @@ private const val thumbRadius = 20f
 
 @ExperimentalComposeUiApi
 @Composable
-internal fun ColorSlideBar(colors: List<Color>, onProgress: (Float) -> Unit) {
+internal fun ColorSlideBar(
+    colors: List<Color>,
+    initialProgress: Float = 1f,
+    onProgress: (Float) -> Unit
+) {
     var progress by remember {
-        mutableStateOf(1f)
+        mutableFloatStateOf(initialProgress)
     }
     var slideBarSize by remember {
         mutableStateOf(IntSize.Zero)

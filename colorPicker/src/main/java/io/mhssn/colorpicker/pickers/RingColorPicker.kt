@@ -1,14 +1,17 @@
 package io.mhssn.colorpicker.pickers
 
 import android.view.MotionEvent
+import android.graphics.Color.colorToHSV
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -18,13 +21,11 @@ import androidx.compose.ui.unit.dp
 import io.mhssn.colorpicker.data.ColorRange
 import io.mhssn.colorpicker.data.Colors.gradientColors
 import io.mhssn.colorpicker.ext.*
-import io.mhssn.colorpicker.helper.BoundedPointStrategy
 import io.mhssn.colorpicker.helper.ColorPickerHelper
-import io.mhssn.colorpicker.helper.MathHelper
-import io.mhssn.colorpicker.helper.MathHelper.getBoundedPointWithInRadius
-import io.mhssn.colorpicker.helper.MathHelper.getLength
 import kotlin.math.atan2
+import kotlin.math.cos
 import kotlin.math.roundToInt
+import kotlin.math.sin
 
 @ExperimentalComposeUiApi
 @Composable
@@ -36,6 +37,7 @@ internal fun RingColorPicker(
     showDarkColorBar: Boolean,
     showAlphaBar: Boolean,
     showColorPreview: Boolean,
+    initialColor: Color = Color.Red,
     onPickedColor: (Color) -> Unit,
 ) {
     val density = LocalDensity.current
@@ -46,39 +48,37 @@ internal fun RingColorPicker(
         with(density) { previewRadius.toPx() }
     }
     var radius by remember {
-        mutableStateOf(0f)
+        mutableFloatStateOf(0f)
     }
-    var pickerLocation by remember(radius) {
-        mutableStateOf(
-            getBoundedPointWithInRadius(
-                radius * 2,
-                radius,
-                getLength(radius * 2, radius, radius),
-                radius - ringWidthPx / 2,
-                BoundedPointStrategy.Edge
-            )
-        )
+    // Ring hue, lightness and darkness map to HSV: hue = H, lightness = 1 - S, darkness = 1 - V
+    val initialHsv = remember {
+        FloatArray(3).also { colorToHSV(initialColor.toArgb(), it) }
+    }
+    // The selector always sits on the ring, so only the angle is stored and the position is
+    // computed with the draw size, so it's correct from the first frame
+    var pickerAngle by remember {
+        mutableDoubleStateOf(Math.toRadians(initialHsv[0].toDouble()))
     }
     var selectedColor by remember {
-        mutableStateOf(Color.Red)
+        mutableStateOf(Color.hsv(initialHsv[0], 1f, 1f))
     }
     var color by remember {
-        mutableStateOf(Color.Red)
+        mutableStateOf(initialColor)
     }
     var lightColor by remember {
-        mutableStateOf(Color.Red)
+        mutableStateOf(Color.hsv(initialHsv[0], initialHsv[1], 1f))
     }
     var darkColor by remember {
-        mutableStateOf(Color.Red)
+        mutableStateOf(initialColor.copy(alpha = 1f))
     }
     var lightness by remember {
-        mutableStateOf(0f)
+        mutableFloatStateOf(1 - initialHsv[1])
     }
     var darkness by remember {
-        mutableStateOf(0f)
+        mutableFloatStateOf(1 - initialHsv[2])
     }
     var alpha by remember {
-        mutableStateOf(1f)
+        mutableFloatStateOf(initialColor.alpha)
     }
     LaunchedEffect(selectedColor, lightness, darkness, alpha) {
         var red = selectedColor.red().lighten(lightness)
@@ -111,7 +111,6 @@ internal fun RingColorPicker(
                                     it.x - radius
                                 ).toDouble()
                             ) + 360) % 360
-                        val length = MathHelper.getLength(it.x, it.y, radius)
                         val progress = angle / 360f
                         val (rangeProgress, range) = ColorPickerHelper.calculateRangeProgress(
                             progress
@@ -148,21 +147,17 @@ internal fun RingColorPicker(
                                 blue = (255 * (1 - rangeProgress)).roundToInt()
                             }
                         }
-                        pickerLocation = getBoundedPointWithInRadius(
-                            it.x,
-                            it.y,
-                            length,
-                            radius - ringWidthPx / 2,
-                            BoundedPointStrategy.Edge
-                        )
+                        pickerAngle = Math.toRadians(angle)
                         selectedColor = Color(red, green, blue)
                     }
                 }
                 return@pointerInteropFilter true
             }) {
+            val center = size.width / 2f
+            val ringRadius = center - ringWidthPx / 2f
             drawCircle(
                 Brush.sweepGradient(gradientColors),
-                radius = radius - ringWidthPx / 2f,
+                radius = ringRadius,
                 style = Stroke(ringWidthPx)
             )
             if (showColorPreview) {
@@ -171,7 +166,13 @@ internal fun RingColorPicker(
                     radius = previewRadiusPx
                 )
             }
-            drawColorSelector(selectedColor, pickerLocation)
+            drawColorSelector(
+                selectedColor,
+                Offset(
+                    center + ringRadius * cos(pickerAngle).toFloat(),
+                    center + ringRadius * sin(pickerAngle).toFloat()
+                )
+            )
         }
         if (showLightColorBar) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -179,20 +180,27 @@ internal fun RingColorPicker(
                 colors = listOf(
                     Color.White,
                     selectedColor
-                )
+                ),
+                initialProgress = initialHsv[1]
             ) {
                 lightness = 1 - it
             }
         }
         if (showDarkColorBar) {
             Spacer(modifier = Modifier.height(16.dp))
-            ColorSlideBar(colors = listOf(Color.Black, lightColor)) {
+            ColorSlideBar(
+                colors = listOf(Color.Black, lightColor),
+                initialProgress = initialHsv[2]
+            ) {
                 darkness = 1 - it
             }
         }
         if (showAlphaBar) {
             Spacer(modifier = Modifier.height(16.dp))
-            ColorSlideBar(colors = listOf(Color.Transparent, darkColor)) {
+            ColorSlideBar(
+                colors = listOf(Color.Transparent, darkColor),
+                initialProgress = initialColor.alpha
+            ) {
                 alpha = it
             }
         }
@@ -205,6 +213,7 @@ internal fun RingColorPicker(
 private fun RingColorPickerPreview() {
     RingColorPicker(
         modifier = Modifier,
+        initialColor = Color(0xFF6FA8DC),
         ringWidth = 20.dp,
         previewRadius = 70.dp,
         showLightColorBar = true,

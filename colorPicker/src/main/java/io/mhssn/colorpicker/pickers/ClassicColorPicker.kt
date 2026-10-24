@@ -1,6 +1,7 @@
 package io.mhssn.colorpicker.pickers
 
 import android.view.MotionEvent
+import android.graphics.Color.colorToHSV
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,6 +12,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,26 +29,32 @@ import kotlin.math.roundToInt
 internal fun ClassicColorPicker(
     modifier: Modifier = Modifier,
     showAlphaBar: Boolean,
+    initialColor: Color = Color.White,
     onPickedColor: (Color) -> Unit
 ) {
-    var pickerLocation by remember {
-        mutableStateOf(Offset.Zero)
+    // Square: x = S (white to color), y = 1 - V (to black), hue bar = H / 360
+    val initialHsv = remember {
+        FloatArray(3).also { colorToHSV(initialColor.toArgb(), it) }
     }
     var colorPickerSize by remember {
         mutableStateOf(IntSize.Zero)
     }
+    // Stored as 0..1 fractions and converted with the draw size, so it's correct from the first frame
+    var pickerFraction by remember {
+        mutableStateOf(Offset(initialHsv[1], 1 - initialHsv[2]))
+    }
     var alpha by remember {
-        mutableStateOf(1f)
+        mutableFloatStateOf(initialColor.alpha)
     }
     var rangeColor by remember {
-        mutableStateOf(Color.White)
+        mutableStateOf(Color.hsv(initialHsv[0], 1f, 1f))
     }
     var color by remember {
-        mutableStateOf(Color.White)
+        mutableStateOf(initialColor)
     }
-    LaunchedEffect(rangeColor, pickerLocation, colorPickerSize, alpha) {
-        val xProgress = 1 - (pickerLocation.x / colorPickerSize.width)
-        val yProgress = pickerLocation.y / colorPickerSize.height
+    LaunchedEffect(rangeColor, pickerFraction, alpha) {
+        val xProgress = 1 - pickerFraction.x
+        val yProgress = pickerFraction.y
         color = Color(
             rangeColor
                 .red()
@@ -75,9 +83,10 @@ internal fun ClassicColorPicker(
                 .pointerInteropFilter {
                     when (it.action) {
                         MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
-                            val x = it.x.coerceIn(0f, colorPickerSize.width.toFloat())
-                            val y = it.y.coerceIn(0f, colorPickerSize.height.toFloat())
-                            pickerLocation = Offset(x, y)
+                            pickerFraction = Offset(
+                                (it.x / colorPickerSize.width).coerceIn(0f, 1f),
+                                (it.y / colorPickerSize.height).coerceIn(0f, 1f)
+                            )
                         }
                     }
                     return@pointerInteropFilter true
@@ -93,11 +102,18 @@ internal fun ClassicColorPicker(
                 drawRect(Brush.verticalGradient(listOf(Color.Transparent, Color.Black)))
             }
             Canvas(modifier = Modifier.fillMaxSize()) {
-                this.drawColorSelector(color.copy(alpha = 1f), pickerLocation)
+                this.drawColorSelector(
+                    color.copy(alpha = 1f),
+                    Offset(pickerFraction.x * size.width, pickerFraction.y * size.height)
+                )
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
-        ColorSlideBar(colors = gradientColors) {
+        // Both ends of the hue bar are red; keep hue 0 at the right end like before
+        ColorSlideBar(
+            colors = gradientColors,
+            initialProgress = if (initialHsv[0] == 0f) 1f else initialHsv[0] / 360f
+        ) {
             val (rangeProgress, range) = ColorPickerHelper.calculateRangeProgress(it.toDouble())
             val red: Int
             val green: Int
@@ -138,7 +154,10 @@ internal fun ClassicColorPicker(
         }
         if (showAlphaBar) {
             Spacer(modifier = Modifier.height(16.dp))
-            ColorSlideBar(colors = listOf(Color.Transparent, rangeColor)) {
+            ColorSlideBar(
+                colors = listOf(Color.Transparent, rangeColor),
+                initialProgress = initialColor.alpha
+            ) {
                 alpha = it
             }
         }
@@ -151,6 +170,7 @@ internal fun ClassicColorPicker(
 private fun ClassicColorPickerPreview() {
     ClassicColorPicker(
         modifier = Modifier,
+        initialColor = Color(0xFF6FA8DC),
         showAlphaBar = true,
         onPickedColor = {}
     )

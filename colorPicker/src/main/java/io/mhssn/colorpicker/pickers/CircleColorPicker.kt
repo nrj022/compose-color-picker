@@ -1,6 +1,7 @@
 package io.mhssn.colorpicker.pickers
 
 import android.view.MotionEvent
+import android.graphics.Color.colorToHSV
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
@@ -11,6 +12,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,7 +25,9 @@ import io.mhssn.colorpicker.helper.ColorPickerHelper
 import io.mhssn.colorpicker.helper.MathHelper.getBoundedPointWithInRadius
 import io.mhssn.colorpicker.helper.MathHelper.getLength
 import kotlin.math.atan2
+import kotlin.math.cos
 import kotlin.math.roundToInt
+import kotlin.math.sin
 
 @ExperimentalComposeUiApi
 @Composable
@@ -32,28 +36,57 @@ internal fun CircleColorPicker(
     showAlphaBar: Boolean,
     showBrightnessBar: Boolean,
     lightCenter: Boolean,
+    initialColor: Color = if (lightCenter) Color.White else Color.Black,
     onPickedColor: (Color) -> Unit
 ) {
     var radius by remember {
-        mutableStateOf(0f)
+        mutableFloatStateOf(0f)
     }
-    var pickerLocation by remember(radius) {
-        mutableStateOf(Offset(radius, radius))
+    val initialHsv = remember {
+        FloatArray(3).also { colorToHSV(initialColor.toArgb(), it) }
+    }
+    // Circle: angle = hue, distance from center = how far from the center color (white or black)
+    // Brightness bar then mixes in the opposite color (black or white)
+    // lightCenter: distance = S, brightness = 1 - V
+    // dark center: brightness = V(1 - S), distance = VS / (1 - V(1 - S))
+    val initialDistance: Float
+    val initialBrightness: Float
+    if (lightCenter) {
+        initialDistance = initialHsv[1]
+        initialBrightness = 1 - initialHsv[2]
+    } else {
+        initialBrightness = initialHsv[2] * (1 - initialHsv[1])
+        initialDistance = if (initialBrightness < 1f) {
+            initialHsv[2] * initialHsv[1] / (1 - initialBrightness)
+        } else {
+            0f
+        }
+    }
+    // Offset from the center as a fraction of the radius, converted with the draw size
+    // so it's correct from the first frame
+    var pickerFraction by remember {
+        val angle = Math.toRadians(initialHsv[0].toDouble())
+        mutableStateOf(
+            Offset(
+                initialDistance * cos(angle).toFloat(),
+                initialDistance * sin(angle).toFloat()
+            )
+        )
     }
     var pickerColor by remember {
         mutableStateOf(
             if (lightCenter) {
-                Color.White
+                Color.hsv(initialHsv[0], initialDistance, 1f)
             } else {
-                Color.Black
+                Color.hsv(initialHsv[0], 1f, initialDistance)
             }
         )
     }
     var brightness by remember {
-        mutableStateOf(0f)
+        mutableFloatStateOf(initialBrightness)
     }
     var alpha by remember {
-        mutableStateOf(1f)
+        mutableFloatStateOf(initialColor.alpha)
     }
     LaunchedEffect(brightness, pickerColor, alpha) {
         onPickedColor(
@@ -143,12 +176,16 @@ internal fun CircleColorPicker(
                                 )
                             }
                         }
-                        pickerLocation = getBoundedPointWithInRadius(
+                        val location = getBoundedPointWithInRadius(
                             it.x,
                             it.y,
                             length,
                             radius,
                             BoundedPointStrategy.Inside
+                        )
+                        pickerFraction = Offset(
+                            (location.x - radius) / radius,
+                            (location.y - radius) / radius
                         )
                     }
                 }
@@ -172,7 +209,11 @@ internal fun CircleColorPicker(
                     )
                 )
             )
-            drawColorSelector(pickerColor, pickerLocation)
+            val center = size.width / 2f
+            drawColorSelector(
+                pickerColor,
+                Offset(center + pickerFraction.x * center, center + pickerFraction.y * center)
+            )
         }
         if (showBrightnessBar) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -183,14 +224,18 @@ internal fun CircleColorPicker(
                     } else {
                         Color.White
                     }, pickerColor
-                )
+                ),
+                initialProgress = 1 - initialBrightness
             ) {
                 brightness = 1 - it
             }
         }
         if (showAlphaBar) {
             Spacer(modifier = Modifier.height(16.dp))
-            ColorSlideBar(colors = listOf(Color.Transparent, pickerColor)) {
+            ColorSlideBar(
+                colors = listOf(Color.Transparent, pickerColor),
+                initialProgress = initialColor.alpha
+            ) {
                 alpha = it
             }
         }
@@ -203,6 +248,7 @@ internal fun CircleColorPicker(
 private fun CircleColorPickerPreview() {
     CircleColorPicker(
         modifier = Modifier,
+        initialColor = Color(0xFF6FA8DC),
         showAlphaBar = true,
         showBrightnessBar = true,
         lightCenter = true,

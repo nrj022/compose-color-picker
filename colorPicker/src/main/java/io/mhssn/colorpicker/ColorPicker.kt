@@ -35,18 +35,26 @@ import io.mhssn.colorpicker.pickers.SimpleRingColorPicker
 sealed class ColorPickerType {
     /**
      * @param showAlphaBar Sets the visibility of the alpha bar.
+     * @param initialColor The color selected when the picker is first shown.
+     * Only applied once; later changes are ignored.
      */
-    class Classic(val showAlphaBar: Boolean = true) : ColorPickerType()
+    class Classic(
+        val showAlphaBar: Boolean = true,
+        val initialColor: Color = Color.White
+    ) : ColorPickerType()
 
     /**
      * @param showBrightnessBar Sets the visibility of the brightness bar.
      * @param showAlphaBar Sets the visibility of the alpha bar.
      * @param lightCenter Changes the center of the circle to black or white.
+     * @param initialColor The color selected when the picker is first shown, defaults to the center color.
+     * Only applied once; later changes are ignored.
      */
     class Circle(
         val showBrightnessBar: Boolean = true,
         val showAlphaBar: Boolean = true,
-        val lightCenter: Boolean = true
+        val lightCenter: Boolean = true,
+        val initialColor: Color = if (lightCenter) Color.White else Color.Black
     ) : ColorPickerType()
 
     /**
@@ -56,6 +64,8 @@ sealed class ColorPickerType {
      * @param showDarknessBar Sets the visibility of the darkness bar.
      * @param showAlphaBar Sets the visibility of the alpha bar.
      * @param showColorPreview Sets the visibility of the center color preview circle.
+     * @param initialColor The color selected when the picker is first shown.
+     * Only applied once; later changes are ignored.
      */
     class Ring(
         val ringWidth: Dp = 10.dp,
@@ -63,18 +73,23 @@ sealed class ColorPickerType {
         val showLightnessBar: Boolean = true,
         val showDarknessBar: Boolean = true,
         val showAlphaBar: Boolean = true,
-        val showColorPreview: Boolean = true
+        val showColorPreview: Boolean = true,
+        val initialColor: Color = Color.Red
     ) : ColorPickerType()
 
     /**
      * @param colorWidth Arc width of all colors.
      * @param tracksCount Amount of the tracks.
      * @param sectorsCount Amount of the sectors for each track.
+     * @param initialColor The color selected when the picker is first shown.
+     * The ring only has fixed colors, so the closest one is selected.
+     * Only applied once; later changes are ignored.
      */
     class SimpleRing(
         val colorWidth: Dp = 20.dp,
         val tracksCount: Int = 5,
         val sectorsCount: Int = 24,
+        val initialColor: Color = Color.Red,
     ) : ColorPickerType()
 }
 
@@ -92,16 +107,19 @@ fun ColorPicker(
     Box(modifier = modifier) {
         when (type) {
             is ColorPickerType.Classic -> ClassicColorPicker(
+                initialColor = type.initialColor,
                 showAlphaBar = type.showAlphaBar,
                 onPickedColor = onPickedColor,
             )
             is ColorPickerType.Circle -> CircleColorPicker(
+                initialColor = type.initialColor,
                 showAlphaBar = type.showAlphaBar,
                 showBrightnessBar = type.showBrightnessBar,
                 lightCenter = type.lightCenter,
                 onPickedColor = onPickedColor
             )
             is ColorPickerType.Ring -> RingColorPicker(
+                initialColor = type.initialColor,
                 ringWidth = type.ringWidth,
                 previewRadius = type.previewRadius,
                 showLightColorBar = type.showLightnessBar,
@@ -111,6 +129,7 @@ fun ColorPicker(
                 onPickedColor = onPickedColor
             )
             is ColorPickerType.SimpleRing -> SimpleRingColorPicker(
+                initialColor = type.initialColor,
                 colorWidth = type.colorWidth,
                 tracksCount = type.tracksCount,
                 sectorsCount = type.sectorsCount,
