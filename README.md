@@ -6,11 +6,33 @@
 
 A color picker for Jetpack compose 🎨
 
+> This is a fork of [mhssn95/compose-color-picker](https://github.com/mhssn95/compose-color-picker).
+>
+> Changes from the original:
+> - Updated to Gradle 9 / AGP 9 / Kotlin 2.4 / Compose 1.11
+> - Migrated the dialog from Material 2 to Material 3 (follows the app's theme and dark mode)
+> - Added `initialColor` to all color picker types
+> - Published via JitPack
+
 # Download
 
+Add the JitPack repository in `settings.gradle`:
+
 ```groovy
-implementation 'io.mhssn:colorpicker:1.0.0'
+dependencyResolutionManagement {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+}
 ```
+
+Add the dependency:
+
+```groovy
+implementation 'com.github.nrj022:compose-color-picker:2.0.0'
+```
+
+Requirements: `minSdk 23`, `compileSdk 35` or higher.
 # Usage
 
 ```kotlin
@@ -33,7 +55,8 @@ ColorPicker(
   
   ```kotlin
   ColorPickerType.Classic(
-      showAlphaBar = true
+      showAlphaBar = true,
+      initialColor = Color.White
   )
   ```
   
@@ -43,7 +66,8 @@ ColorPicker(
   ColorPickerType.Circle(
       showBrightnessBar = true,
       showAlphaBar = true,
-      lightCenter = true
+      lightCenter = true,
+      initialColor = Color.White // defaults to the center color
   )
   ```
 
@@ -56,10 +80,11 @@ ColorPicker(
   ColorPickerType.Ring(
       ringWidth = 10.dp,
       previewRadius = 80.dp,
-      showLightColorBar = true,
-      showDarkColorBar = true,
+      showLightnessBar = true,
+      showDarknessBar = true,
       showAlphaBar = true,
-      showColorPreview = true
+      showColorPreview = true,
+      initialColor = Color.Red
   )
   ```
 
@@ -71,9 +96,12 @@ ColorPicker(
   ColorPickerType.SimpleRing(
       colorWidth = 20.dp,
       tracksCount = 5,
-      sectorsCount = 24
+      sectorsCount = 24,
+      initialColor = Color.Red // the closest color in the ring is selected
   )
   ```
+
+`initialColor` is only applied when the picker is first shown; later changes are ignored.
 
 ## Color Picker Dialog
 
