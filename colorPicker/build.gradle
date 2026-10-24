@@ -8,7 +8,7 @@ plugins {
 ext {
     GROUP_ID = 'io.github.nrj022'
     ARTIFACT_ID = 'colorpicker'
-    VERSION = '2.0.0'
+    VERSION = '2.0.1'
 }
 
 android {
@@ -17,7 +17,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        minSdk = 23
+        minSdk = 21
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -40,6 +40,13 @@ android {
 
 kotlin {
     jvmToolchain(17)
+    // Compiled with a newer Kotlin, but emit Kotlin 2.0 metadata so apps on Kotlin 2.0+ can use it
+    compilerOptions {
+        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
+        apiVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
+    }
+    // Publish a kotlin-stdlib dependency apps on Kotlin 2.0 already have, not the compiler's version
+    coreLibrariesVersion = "2.0.21"
 }
 
 // Credentials and signing keys are read from Gradle properties
@@ -93,7 +100,7 @@ mavenPublishing {
 }
 
 dependencies {
-    implementation platform(libs.androidx.compose.bom)
+    implementation platform(libs.androidx.compose.bom.library)
     implementation libs.androidx.compose.runtime
     implementation libs.androidx.compose.foundation
     implementation libs.androidx.compose.ui
