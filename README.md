@@ -29,10 +29,10 @@ dependencyResolutionManagement {
 Add the dependency:
 
 ```groovy
-implementation 'com.github.nrj022:compose-color-picker:2.0.0'
+implementation 'com.github.nrj022:compose-color-picker:2.0.1'
 ```
 
-Requirements: `minSdk 23`, `compileSdk 35` or higher.
+Requirements: `minSdk 21`, `compileSdk 33`, Kotlin 2.0, Compose BOM 2023.08.00 (Compose 1.5) or higher.
 # Usage
 
 ```kotlin
