@@ -52,7 +52,13 @@ mavenPublishing {
         signAllPublications()
     }
 
-    coordinates(GROUP_ID, ARTIFACT_ID, VERSION)
+    // JitPack sets JITPACK, GROUP (com.github.<user>) and VERSION (the git tag) when building
+    def onJitPack = System.getenv("JITPACK") == "true"
+    coordinates(
+        onJitPack ? System.getenv("GROUP") : GROUP_ID,
+        ARTIFACT_ID,
+        onJitPack ? System.getenv("VERSION") : VERSION
+    )
 
     pom {
         name = ARTIFACT_ID
