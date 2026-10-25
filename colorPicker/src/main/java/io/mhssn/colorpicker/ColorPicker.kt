@@ -97,7 +97,8 @@ sealed class ColorPickerType {
  * @param type Color picker type example [ColorPickerType.Circle].
  * @param onPickedColor Executes when the user selects a color.
  */
-@ExperimentalComposeUiApi
+// pointerInteropFilter is an internal detail, so the opt-in is not passed on to callers
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ColorPicker(
     modifier: Modifier = Modifier,
@@ -146,7 +147,7 @@ fun ColorPicker(
  * @param type Color picker type example [ColorPickerType.Classic].
  * @param onPickedColor Executes when the user selects a color from the color picker dialog.
  */
-@ExperimentalComposeUiApi
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ColorPickerDialog(
     show: Boolean,
