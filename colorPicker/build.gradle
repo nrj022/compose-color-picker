@@ -8,7 +8,7 @@ plugins {
 ext {
     GROUP_ID = 'io.github.nrj022'
     ARTIFACT_ID = 'colorpicker'
-    VERSION = '2.0.1'
+    VERSION = '2.0.2'
 }
 
 android {
