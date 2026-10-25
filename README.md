@@ -9,9 +9,10 @@ A color picker for Jetpack compose 🎨
 > This is a fork of [mhssn95/compose-color-picker](https://github.com/mhssn95/compose-color-picker).
 >
 > Changes from the original:
-> - Updated to Gradle 9 / AGP 9 / Kotlin 2.4 / Compose 1.11
+> - Updated the build to Gradle 9 / AGP 9, while keeping the requirements low (Kotlin 2.0, Compose 1.5)
 > - Migrated the dialog from Material 2 to Material 3 (follows the app's theme and dark mode)
 > - Added `initialColor` to all color picker types
+> - Fixed the selector briefly flickering at the wrong position when a picker is first shown
 > - Published via JitPack
 
 # Download
@@ -33,6 +34,7 @@ implementation 'com.github.nrj022:compose-color-picker:2.0.1'
 ```
 
 Requirements: `minSdk 21`, `compileSdk 33`, Kotlin 2.0, Compose BOM 2023.08.00 (Compose 1.5) or higher.
+
 # Usage
 
 ```kotlin
@@ -71,7 +73,7 @@ ColorPicker(
   )
   ```
 
-	![circleColorPickers](/assets/circleColorPicker.png)
+  ![circleColorPickers](/assets/circleColorPicker.png)
 
 
 - Ring
@@ -111,10 +113,10 @@ ColorPickerDialog(
     type = colorPickerType,
     properties = DialogProperties(),
     onDismissRequest = {
-    	showDialog = false
+        showDialog = false
     },
     onPickedColor = {
-    	color = it
+        color = it
     },
 )
 ```
@@ -139,7 +141,7 @@ ColorPickerDialog(
       .width(205.dp)
       .height(300.dp)
       .clip(RoundedCornerShape(32.dp))
-      .transparentBackground(verticalBoxesCount = 16)
+      .transparentBackground(verticalBoxesAmount = 16)
       .background(Color.Cyan.copy(alpha = 0.2f))
   )
   ```
